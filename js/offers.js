@@ -1,0 +1,17 @@
+import { supabase,configured } from './supabase-client.js';
+import { escapeHtml,money,localMoney,waLink } from './common.js';
+
+document.querySelector('#year').textContent=new Date().getFullYear();
+if(!configured){document.querySelector('#offersGrid').innerHTML='<div class="notice error">Configura Supabase para mostrar las ofertas.</div>';throw new Error('Supabase no configurado')}
+const [{data:settings},{data:page},{data:offers,error},{data:trading}]=await Promise.all([
+  supabase.from('site_settings').select('*').eq('id',1).single(),
+  supabase.from('site_pages').select('*').eq('slug','ofertas-digitales').maybeSingle(),
+  supabase.from('digital_offers').select('*').eq('active',true).order('sort_order'),
+  supabase.from('trading_settings').select('*').eq('id',1).maybeSingle()
+]);
+if(page){document.querySelector('#offersEyebrow').textContent=page.eyebrow||'OFERTAS DIGITALES';document.querySelector('#offersTitle').textContent=page.title||'';document.querySelector('#offersSubtitle').textContent=page.subtitle||''}
+if(error){document.querySelector('#offersGrid').innerHTML=`<div class="notice error">${escapeHtml(error.message)}</div>`}else if(!offers?.length){document.querySelector('#offersEmpty').classList.remove('hidden')}else{
+ document.querySelector('#offersGrid').innerHTML=offers.map((o,i)=>{const msg=o.whatsapp_message||`Hola, quiero información sobre ${o.name} en Digital World VIP.`;const link=waLink(o.whatsapp_number||settings?.whatsapp,msg);return `<article class="digital-offer-card"><div class="digital-offer-media">${o.image_url?`<img src="${escapeHtml(o.image_url)}" alt="${escapeHtml(o.name)}" loading="lazy">`:`<div class="offer-placeholder"><span>${escapeHtml((o.name||'DW').slice(0,2).toUpperCase())}</span></div>`}<div class="offer-number">${String(i+1).padStart(2,'0')}</div></div><div class="digital-offer-body"><div class="eyebrow">ACCESO DIGITAL</div><h2>${escapeHtml(o.name)}</h2><p>${escapeHtml(o.subtitle||'')}</p><div class="offer-prices"><div><small>Pesos</small><strong>${localMoney(o.price_local||0)}</strong></div><div><small>USD</small><strong>${money(o.price_usd||0,'USD')}</strong></div></div><ul>${(o.details||[]).map(d=>`<li>${escapeHtml(d)}</li>`).join('')}</ul><a class="btn btn-primary full" ${link==='#'?`href="#" onclick="alert('Configura WhatsApp desde Administrador.');return false"`:`href="${link}" target="_blank" rel="noopener"`}>Consultar por WhatsApp</a></div></article>`}).join('')
+}
+if(!trading){document.querySelector('#tradingOfferCard')?.classList.add('hidden')}
+if(trading){document.querySelector('#tradingOfferEyebrow').textContent=trading.eyebrow||'NUEVA ERA';document.querySelector('#tradingOfferTitle').textContent=trading.title||'TRADING — LA ERA DIGITAL';document.querySelector('#tradingOfferText').textContent=trading.subtitle||'';if(trading.cover_url)document.querySelector('#tradingOfferBg').style.backgroundImage=`url("${String(trading.cover_url).replace(/["\\]/g,'')}")`;if(trading.active===false)document.querySelector('#tradingOfferCard').classList.add('hidden')}
