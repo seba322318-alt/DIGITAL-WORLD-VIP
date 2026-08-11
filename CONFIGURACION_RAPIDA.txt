@@ -1,0 +1,13 @@
+DIGITAL WORLD VIP — CONFIGURACIÓN RÁPIDA
+
+1) Crear proyecto Supabase.
+2) Ejecutar supabase/schema.sql.
+3) Crear usuario admin en Supabase Authentication.
+4) Insertarlo como role='admin' en public.profiles (ver final de schema.sql).
+5) Editar config.js con URL y ANON/PUBLISHABLE KEY.
+6) En Netlify agregar SUPABASE_URL, SUPABASE_ANON_KEY y SUPABASE_SERVICE_ROLE_KEY.
+7) Desplegar preferentemente mediante GitHub + Netlify o Netlify CLI.
+8) Entrar a /login.html con tu usuario administrador.
+9) Configurar precios, WhatsApp, fundadores, contenido y alumnos desde /admin.html.
+
+NO pongas SUPABASE_SERVICE_ROLE_KEY en config.js.

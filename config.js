@@ -1,0 +1,4 @@
+window.DWV_CONFIG = {
+  SUPABASE_URL: "https://bhusaygctxgndemeobnl.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJodXNheWdjdHhnbmRlbWVvYm5sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NjA3MTksImV4cCI6MjEwMjAzNjcxOX0.tQKyVpHXlzl7pOQaxVc_K5Pm3zened1tBFRw0ejIR3E"
+};
