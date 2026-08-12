@@ -6,42 +6,50 @@ const s=data.settings||{};
 const academy=(s.academy_name||'Digital World VIP');
 
 document.querySelector('#brandName').textContent=academy.toUpperCase();
-document.querySelector('#heroBrandline').textContent=academy.toUpperCase();
 document.querySelector('#footerBrand').textContent=academy;
-document.querySelector('#heroTitle').textContent=s.hero_title||'Aprende a crear, promocionar y vender productos digitales';
-document.querySelector('#heroSub').textContent=s.hero_subtitle||'Formación práctica para desarrollar habilidades de marketing digital y construir oportunidades de negocio en internet.';
 document.querySelector('#year').textContent=new Date().getFullYear();
 
 const slogan=(s.hero_slogan||'TU MEJOR ALIADO').trim();
-const words=slogan.split(/\s+/).filter(Boolean);
-const last=words.pop()||'';
-document.querySelector('#heroSlogan').innerHTML=`${escapeHtml(words.join(' '))}${words.length?' ':''}<span>${escapeHtml(last)}</span>`;
+document.querySelector('#heroSlogan').textContent=slogan;
 
 const heroPoster=s.hero_poster_url||'https://images.pexels.com/videos/35244308/drone-sunset-35244308.jpeg?auto=compress&dpr=1&h=1080&w=1920';
 const posterEl=document.querySelector('#heroPoster');
 posterEl.style.backgroundImage=`url("${String(heroPoster).replace(/["\\]/g,'')}")`;
 const video=document.querySelector('#heroVideo');
 const source=document.querySelector('#heroVideoSource');
-if(s.hero_video_enabled!==false && s.hero_video_url){
-  source.src=s.hero_video_url;
+// Video de ciudad por defecto. Desde Administrador puede reemplazarse, subirse otro o desactivarse.
+const defaultCityVideo='https://videos.pexels.com/video-files/35244308/14930891_3840_2160_24fps.mp4';
+const selectedHeroVideo=(s.hero_video_url||defaultCityVideo).trim();
+if(s.hero_video_enabled!==false && selectedHeroVideo){
+  source.src=selectedHeroVideo;
   video.poster=heroPoster;
   video.load();
   video.classList.remove('hidden');
+  video.addEventListener('loadeddata',()=>posterEl.classList.add('video-ready'),{once:true});
+  video.addEventListener('error',()=>{video.classList.add('hidden');posterEl.classList.remove('video-ready')},{once:true});
 }else{
   video.classList.add('hidden');
 }
 
-const planClasses={bronce:'badge-bronze',oro:'badge-gold',diamante:'badge-diamond'};
-const planLabels={bronce:'Nivel inicial',oro:'Nivel avanzado',diamante:'Nivel completo'};
+const planClasses={bronce:'bronze',oro:'gold',diamante:'diamond'};
+const planSymbols={bronce:'★',oro:'♛',diamante:'◆'};
+const planLabels={bronce:'ACCESO BRONCE',oro:'TODO DE BRONCE + ORO',diamante:'ACCESO TOTAL'};
 document.querySelector('#plans').innerHTML=data.plans.map((p)=>{
   const msg=`Hola, quiero adquirir la membresía ${p.name} de ${academy}. Quiero información para realizar el pago por transferencia.`;
   const link=waLink(s.whatsapp,msg); const disabled=link==='#';
-  return `<article class="plan-card plan-${escapeHtml(p.slug)} ${p.slug==='oro'?'featured':''}">
-    <div class="plan-topline"></div><div class="plan-heading-row"><span class="plan-badge ${planClasses[p.slug]||'badge-gold'}">${escapeHtml(p.name)}</span><span class="plan-level">${planLabels[p.slug]||'Membresía'}</span></div>
-    <h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.description||'')}</p>
-    <div class="price-stack"><div class="price"><strong>${localMoney(p.price_local)}</strong><small>Precio en pesos • moneda configurable</small></div><div class="price price-usd"><strong>${money(p.price_usd,'USD')}</strong><small>Precio en dólares</small></div></div>
-    <ul class="features">${(p.features||[]).map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
-    <div class="plan-actions"><a class="btn btn-dark full" href="/membresia.html?plan=${encodeURIComponent(p.slug)}">Ver contenido</a><a class="btn btn-primary full" ${disabled?'href="#" onclick="alert(\'Configura el número de WhatsApp desde el panel administrador.\');return false"':`href="${link}" target="_blank" rel="noopener"`}>Solicitar por WhatsApp</a></div>
+  const features=(p.features||[]).slice(0,6);
+  return `<article class="approved-plan-card approved-${planClasses[p.slug]||'gold'} ${p.slug==='oro'?'featured':''}">
+    ${p.slug==='oro'?'<div class="approved-ribbon">MÁS POPULAR</div>':''}
+    <div class="approved-plan-inner">
+      <div class="approved-plan-emblem"><span>${planSymbols[p.slug]||'♛'}</span></div>
+      <div class="approved-plan-main">
+        <div class="approved-plan-title-row"><h3>${escapeHtml(p.name)}</h3><div class="approved-plan-price"><strong>${money(p.price_usd,'USD')}</strong><small>/mes</small></div></div>
+        <div class="approved-plan-level">${planLabels[p.slug]||'MEMBRESÍA'}</div>
+        <ul class="approved-plan-features">${features.map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul>
+        <div class="approved-local-price">Precio en pesos: <b>${localMoney(p.price_local)}</b></div>
+        <div class="approved-plan-actions"><a class="approved-plan-button" ${disabled?'href="#" onclick="alert(\'Configura el número de WhatsApp desde el panel administrador.\');return false"':`href="${link}" target="_blank" rel="noopener"`}>ELEGIR PLAN</a><a class="approved-plan-more" href="/membresia.html?plan=${encodeURIComponent(p.slug)}">Ver contenido</a></div>
+      </div>
+    </div>
   </article>`;
 }).join('');
 
