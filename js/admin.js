@@ -28,7 +28,34 @@ function setupUploaders(root=document){
   });
 }
 
-async function overview(){await loadPlans();const [{count:students},{count:courses},{count:lessons}]=await Promise.all([supabase.from('profiles').select('*',{count:'exact',head:true}).eq('role','student'),supabase.from('courses').select('*',{count:'exact',head:true}),supabase.from('lessons').select('*',{count:'exact',head:true})]);view.innerHTML=`<div class="grid-3"><div class="metric"><span>Alumnos</span><strong>${students||0}</strong></div><div class="metric"><span>Módulos</span><strong>${courses||0}</strong></div><div class="metric"><span>Clases</span><strong>${lessons||0}</strong></div></div><div class="panel" style="margin-top:18px"><h2>Administración</h2><p style="color:#9ea8b8">Desde este panel puedes gestionar alumnos, membresías, cursos, fundadores, portada, video, imágenes y las páginas públicas.</p></div>`}
+async function overview(){
+  await loadPlans();
+  const [{count:students},{count:courses},{count:lessons},{count:offers}]=await Promise.all([
+    supabase.from('profiles').select('*',{count:'exact',head:true}).eq('role','student'),
+    supabase.from('courses').select('*',{count:'exact',head:true}),
+    supabase.from('lessons').select('*',{count:'exact',head:true}),
+    supabase.from('digital_offers').select('*',{count:'exact',head:true}).eq('active',true)
+  ]);
+  view.innerHTML=`
+  <section class="admin-dashboard-premium">
+    <div class="admin-welcome"><div><h2>Dashboard</h2><p>Bienvenido a tu panel de administración</p></div><a class="btn btn-outline-gold btn-small" href="/" target="_blank">◉ VISTA PREVIA DEL SITIO</a></div>
+    <div class="admin-metric-grid">
+      <div class="admin-metric-card"><span>ALUMNOS TOTALES</span><strong>${students||0}</strong><i>♟</i></div>
+      <div class="admin-metric-card"><span>MÓDULOS ACTIVOS</span><strong>${courses||0}</strong><i>▰</i></div>
+      <div class="admin-metric-card"><span>MEMBRESÍAS ACTIVAS</span><strong>${plans.length||0}</strong><i>♛</i></div>
+      <div class="admin-metric-card"><span>OFERTAS DIGITALES</span><strong>${offers||0}</strong><i>◇</i></div>
+    </div>
+    <div class="admin-dashboard-columns">
+      <div class="panel admin-dark-panel"><h3>Resumen de contenido</h3><div class="admin-summary-row"><span>Clases disponibles</span><b>${lessons||0}</b></div><div class="admin-summary-row"><span>Niveles de membresía</span><b>${plans.length||0}</b></div><div class="admin-summary-row"><span>Ofertas visibles</span><b>${offers||0}</b></div></div>
+      <div class="panel admin-dark-panel"><h3>Accesos rápidos</h3><div class="admin-quick-actions"><button class="btn btn-primary" data-go="content">＋ AGREGAR CURSO</button><button class="btn btn-primary" data-go="students">＋ AGREGAR ALUMNO</button><button class="btn btn-outline-gold" data-go="offers">VER ACCESOS DIGITALES</button></div></div>
+    </div>
+  </section>`;
+  view.querySelectorAll('[data-go]').forEach(btn=>btn.onclick=()=>{
+    const target=btn.dataset.go;
+    document.querySelectorAll('#nav [data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view===target));
+    routes[target]();
+  });
+}
 function accessLabel(slug){const p=plans.find(x=>x.slug===slug); const level=Number(p?.level||0); return plans.filter(x=>Number(x.level)<=level).sort((a,b)=>a.level-b.level).map(x=>x.name).join(' + ')||'Sin acceso'}
 
 async function students(){
