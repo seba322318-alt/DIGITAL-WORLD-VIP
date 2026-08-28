@@ -4,14 +4,63 @@ import { loadPublicData,money,localMoney,waLink,escapeHtml } from './common.js';
 const data=await loadPublicData();
 const s=data.settings||{};
 const academy=(s.academy_name||'Digital World VIP');
-
 document.querySelector('#brandName').textContent=academy.toUpperCase();
 document.querySelector('#footerBrand').textContent=academy;
 document.querySelector('#year').textContent=new Date().getFullYear();
 const mainTitle=(s.hero_title||academy||'DIGITAL WORLD VIP').trim();
-document.querySelector('#heroMainTitle').textContent=mainTitle;
-const slogan=(s.hero_slogan||'TU MEJOR ALIADO').trim();
-document.querySelector('#heroSlogan').textContent=slogan;
+const heroTitleEl=document.querySelector('#heroMainTitle');
+heroTitleEl.textContent=mainTitle;
+const slogan=(s.hero_slogan||'Formación digital para aprender, aplicar y crecer online').trim();
+const heroSloganEl=document.querySelector('#heroSlogan');
+heroSloganEl.textContent=slogan;
+
+const fontMap={
+  'Montserrat':"'Montserrat',Arial,sans-serif",
+  'Poppins':"'Poppins',Arial,sans-serif",
+  'Cinzel':"'Cinzel',Georgia,serif",
+  'Arial':"Arial,sans-serif",
+  'Georgia':"Georgia,'Times New Roman',serif",
+  'Trebuchet MS':"'Trebuchet MS',Arial,sans-serif",
+  'Verdana':"Verdana,Arial,sans-serif"
+};
+function applyHeroAppearance(){
+  const primary=s.hero_title_color||'#F8C54D';
+  const secondary=s.hero_title_color_2||'#FFF0AB';
+  const shadow=s.hero_title_shadow_color||'#3B2507';
+  const effect=s.hero_title_effect||'metallic';
+  heroTitleEl.style.fontFamily=fontMap[s.hero_font]||fontMap.Montserrat;
+  heroTitleEl.style.background='none';
+  heroTitleEl.style.webkitBackgroundClip='border-box';
+  heroTitleEl.style.backgroundClip='border-box';
+  heroTitleEl.style.color=primary;
+  heroTitleEl.style.textShadow='none';
+  heroTitleEl.style.filter='none';
+
+  if(effect==='gradient'){
+    heroTitleEl.style.background=`linear-gradient(180deg,${secondary},${primary})`;
+    heroTitleEl.style.webkitBackgroundClip='text';
+    heroTitleEl.style.backgroundClip='text';
+    heroTitleEl.style.color='transparent';
+  }else if(effect==='shadow'){
+    heroTitleEl.style.textShadow=`0 8px 18px ${shadow}`;
+  }else if(effect==='glow'){
+    heroTitleEl.style.textShadow=`0 0 8px ${primary},0 0 22px ${primary},0 8px 20px ${shadow}`;
+  }else if(effect==='3d-soft'){
+    heroTitleEl.style.textShadow=`0 1px 0 ${shadow},0 2px 0 ${shadow},0 3px 0 ${shadow},0 7px 12px rgba(0,0,0,.55)`;
+  }else if(effect==='3d-strong'){
+    heroTitleEl.style.textShadow=`0 1px 0 ${shadow},0 2px 0 ${shadow},0 3px 0 ${shadow},0 4px 0 ${shadow},0 5px 0 ${shadow},0 6px 0 ${shadow},0 8px 14px rgba(0,0,0,.7)`;
+  }else if(effect==='metallic'){
+    heroTitleEl.style.background=`linear-gradient(180deg,${secondary} 0%,${primary} 28%,${shadow} 58%,${primary} 78%,${secondary} 100%)`;
+    heroTitleEl.style.webkitBackgroundClip='text';
+    heroTitleEl.style.backgroundClip='text';
+    heroTitleEl.style.color='transparent';
+    heroTitleEl.style.filter=`drop-shadow(0 6px 6px ${shadow})`;
+  }
+  heroSloganEl.style.fontFamily=fontMap[s.hero_slogan_font]||fontMap.Montserrat;
+  heroSloganEl.style.color=s.hero_slogan_color||'#FFFFFF';
+}
+applyHeroAppearance();
+
 const heroPoster=s.hero_poster_url||'https://images.pexels.com/videos/35244308/drone-sunset-35244308.jpeg?auto=compress&dpr=1&h=1080&w=1920';
 const posterEl=document.querySelector('#heroPoster');
 posterEl.style.backgroundImage=`url("${String(heroPoster).replace(/["\\]/g,'')}")`;
@@ -23,7 +72,8 @@ if(s.hero_video_enabled!==false && selectedHeroVideo){source.src=selectedHeroVid
 const planClasses={bronce:'bronze',oro:'gold',diamante:'diamond'};
 const planSymbols={bronce:'★',oro:'♛',diamante:'◆'};
 const planLabels={bronce:'ACCESO BRONCE',oro:'TODO DE BRONCE + ORO',diamante:'ACCESO TOTAL'};
-document.querySelector('#plans').innerHTML=data.plans.map((p)=>{const msg=`Hola, quiero adquirir la membresía ${p.name} de ${academy}. Quiero información para realizar el pago por transferencia.`;const link=waLink(s.whatsapp,msg);const disabled=link==='#';const features=(p.features||[]).slice(0,6);return `<article class="approved-plan-card approved-${planClasses[p.slug]||'gold'} ${p.slug==='oro'?'featured':''}">${p.slug==='oro'?'<div class="approved-ribbon">MÁS POPULAR</div>':''}<div class="approved-plan-inner"><div class="approved-plan-emblem"><span>${planSymbols[p.slug]||'♛'}</span></div><div class="approved-plan-main"><div class="approved-plan-title-row"><h3>${escapeHtml(p.name)}</h3><div class="approved-plan-price"><strong>${money(p.price_usd,'USD')}</strong><small>/mes</small></div></div><div class="approved-plan-level">${planLabels[p.slug]||'MEMBRESÍA'}</div><ul class="approved-plan-features">${features.map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul><div class="approved-local-price">Precio en pesos: <b>${localMoney(p.price_local)}</b></div><div class="approved-plan-actions"><a class="approved-plan-button" ${disabled?'href="#" onclick="alert(\'Configura el número de WhatsApp desde el panel administrador.\');return false"':`href="${link}" target="_blank" rel="noopener"`}>ELEGIR PLAN</a><a class="approved-plan-more" href="/membresia.html?plan=${encodeURIComponent(p.slug)}">Ver contenido</a></div></div></div></article>`}).join('');
+document.querySelector('#plans').innerHTML=data.plans.map((p)=>{const msg=`Hola, quiero adquirir la membresía ${p.name} de ${academy}.
+Quiero información para realizar el pago por transferencia.`;const link=waLink(s.whatsapp,msg);const disabled=link==='#';const features=(p.features||[]).slice(0,6);return `<article class="approved-plan-card approved-${planClasses[p.slug]||'gold'} ${p.slug==='oro'?'featured':''}">${p.slug==='oro'?'<div class="approved-ribbon">MÁS POPULAR</div>':''}<div class="approved-plan-inner"><div class="approved-plan-emblem"><span>${planSymbols[p.slug]||'♛'}</span></div><div class="approved-plan-main"><div class="approved-plan-title-row"><h3>${escapeHtml(p.name)}</h3><div class="approved-plan-price"><strong>${money(p.price_usd,'USD')}</strong><small>/mes</small></div></div><div class="approved-plan-level">${planLabels[p.slug]||'MEMBRESÍA'}</div><ul class="approved-plan-features">${features.map(f=>`<li>${escapeHtml(f)}</li>`).join('')}</ul><div class="approved-local-price">Precio en pesos: <b>${localMoney(p.price_local)}</b></div><div class="approved-plan-actions"><a class="approved-plan-button" ${disabled?'href="#" onclick="alert(\'Configura el número de WhatsApp desde el panel administrador.\');return false"':`href="${link}" target="_blank" rel="noopener"`}>ELEGIR PLAN</a><a class="approved-plan-more" href="/membresia.html?plan=${encodeURIComponent(p.slug)}">Ver contenido</a></div></div></div></article>`}).join('');
 document.querySelector('#founders').innerHTML=data.founders.slice(0,2).map(f=>`<article class="founder"><div class="founder-photo">${f.photo_url?`<img src="${escapeHtml(f.photo_url)}" alt="${escapeHtml(f.name)}" style="width:100%;height:100%;object-fit:cover">`:'Foto del fundador'}</div><div class="founder-body"><h4>${escapeHtml(f.name)}</h4><div class="role">${escapeHtml(f.role||'Co-fundador')}</div><p>${escapeHtml(f.bio||'')}</p></div></article>`).join('');
 const fallbackPages={'home-marketing':{eyebrow:'Ecosistema Digital World VIP',title:'Conocimientos pensados para el mundo digital',subtitle:'Estrategia, contenido, ventas y herramientas para desarrollar proyectos digitales.',active:true},viajes:{title:'Viajes e incentivos',subtitle:'Conoce campañas y experiencias de reconocimiento.',hero_image_url:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=85',active:true},'estilo-vida':{title:'Trabajo digital',subtitle:'Herramientas y habilidades para crear desde cualquier lugar.',hero_image_url:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=85',active:true}};
 const fallbackMarketing=[{badge:'01',title:'Marketing y estrategia',body:'Aprende a presentar una oferta, comunicar valor y estructurar acciones digitales.',image_url:'https://images.pexels.com/photos/7970815/pexels-photo-7970815.jpeg?auto=compress&dpr=1&h=900&w=1400'},{badge:'02',title:'Negocio online',body:'Organiza productos, recursos y procesos para desarrollar una presencia comercial en internet.',image_url:'https://images.pexels.com/photos/16675632/pexels-photo-16675632/free-photo-of-shoper-website-opened-on-the-computer.jpeg?auto=compress&dpr=1&h=900&w=1400'},{badge:'03',title:'Ventas digitales',body:'Conoce herramientas y conceptos para llevar una propuesta al mercado digital.',image_url:'https://images.pexels.com/photos/5632397/pexels-photo-5632397.jpeg?auto=compress&dpr=1&h=900&w=1400'}];
